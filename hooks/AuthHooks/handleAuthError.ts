@@ -1,5 +1,6 @@
 import { useDispatch } from "react-redux";
 import { clearToken, setShowSessionExpiredModalTrue } from "../../store/slices/auth/token-login-slice";
+import { useRouter } from "next/router";
 
 
 export const normalizeAPIResponse = (response: any) => {
@@ -44,16 +45,21 @@ export const normalizeAPIResponse = (response: any) => {
 
 export default function useAuthErrorHandler() {
   const dispatch = useDispatch();
+  const router = useRouter();
 
   const handleAuthError = (response: any, setLoading?: (state: boolean) => void, setError?: (error: string) => void) => {
     const normalized = normalizeAPIResponse(response);
-    const errMsg = normalized.error || 'An unexpected error occurred. Please try again later.';
+    const errMsg = normalized.error;
     
     setError && setError(errMsg); 
     setLoading && setLoading(false);
+
+    if(response?.status === 401) {
+      router.push('/login');
+      dispatch(clearToken());
+    }
     
     if (response?.status === 403) {
-      dispatch(clearToken());
       dispatch(setShowSessionExpiredModalTrue());
     }
 
