@@ -8,6 +8,7 @@ import DeleteCouponAPI from '../../services/api/discounts/delete-coupon-code-api
 import { CONSTANTS } from '../../services/config/app-config';
 import { get_access_token } from '../../store/slices/auth/token-login-slice';
 import useHandleStateUpdate from '../GeneralHooks/handle-state-update-hook';
+import useAuthErrorHandler from '../AuthHooks/handleAuthError';
 
 const useOrderSummary = (quotationId: string) => {
   const { SUMMIT_APP_CONFIG }: any = CONSTANTS;
@@ -18,6 +19,8 @@ const useOrderSummary = (quotationId: string) => {
   const [storeCredit, setStoreCredit] = useState<any>('');
   const [couponCode, setCouponCode] = useState<any>('');
   const [isCouponApplied, setIsCouponApplied] = useState(false);
+  const handleAuthError = useAuthErrorHandler();
+  
   const getOrderSummary = async (quotationId: string) => {
     setIsLoading(true);
     try {
@@ -35,7 +38,8 @@ const useOrderSummary = (quotationId: string) => {
         });
       } else {
         setOrderSummary({});
-        setErrMessage(orderSummaryData?.data?.message?.error);
+        handleAuthError(orderSummaryData, undefined, setErrMessage);
+        // setErrMessage(orderSummaryData?.data?.message?.error);
       }
     } catch (error) {
       setErrMessage('Failed to fetch Order Summary Data');
@@ -61,7 +65,8 @@ const useOrderSummary = (quotationId: string) => {
           getOrderSummary(quotationId);
         }, 1000);
       } else {
-        toast.error(applyStoreCredit?.data?.message?.error);
+        // toast.error(applyStoreCredit?.data?.message?.error);
+        handleAuthError(applyStoreCredit, undefined, setErrMessage);
       }
     } else {
       toast.error('Please enter store credit');
@@ -81,7 +86,8 @@ const useOrderSummary = (quotationId: string) => {
           getOrderSummary(quotationId);
         }, 1000);
       } else {
-        toast.error(applyCouponCode?.data?.message?.error);
+        // toast.error(applyCouponCode?.data?.message?.error);
+        handleAuthError(applyCouponCode, undefined, setErrMessage);
       }
     } else {
       toast.error('Please enter valid coupon code');
@@ -100,7 +106,8 @@ const useOrderSummary = (quotationId: string) => {
         getOrderSummary(quotationId);
       }, 1000);
     } else {
-      toast.error(newCatalog?.message?.error);
+      // toast.error(newCatalog?.message?.error);
+      handleAuthError(newCatalog, undefined, setErrMessage);
     }
   };
 

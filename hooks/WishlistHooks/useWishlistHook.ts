@@ -5,6 +5,7 @@ import { get_access_token } from '../../store/slices/auth/token-login-slice';
 import { addWishList, selectWishlist } from '../../store/slices/wishlist-slices/wishlist-local-slice';
 import useHandleStateUpdate from '../GeneralHooks/handle-state-update-hook';
 import { CONSTANTS } from '../../services/config/app-config';
+import useAuthErrorHandler from '../AuthHooks/handleAuthError';
 
 const useWishlist = () => {
   const { isLoading, setIsLoading, errorMessage, setErrMessage }: any = useHandleStateUpdate();
@@ -12,6 +13,7 @@ const useWishlist = () => {
   const { SUMMIT_APP_CONFIG }: any = CONSTANTS;
   const wishlistCount: any = useSelector(selectWishlist)?.wislistCount;
   const TokenFromStore: any = useSelector(get_access_token);
+  const handleAuthError = useAuthErrorHandler();
 
   const wishlistData = useSelector(selectWishlist)?.items || [];
 
@@ -23,8 +25,7 @@ const useWishlist = () => {
         dispatch(addWishList(wishlistData?.data?.message));
         setIsLoading(false);
       } else {
-        setIsLoading(false);
-        setErrMessage(wishlistData?.data?.message?.error);
+        handleAuthError(wishlistData, setIsLoading, setErrMessage);
       }
       return wishlistData;
     } catch (error) {

@@ -7,6 +7,7 @@ import { get_access_token } from '../../store/slices/auth/token-login-slice';
 import fetchProductReview from '../../services/api/product-detail-page-apis/get-product-review';
 import UploadReviewPhotoAPI from '../../services/api/utils/upload-file-api';
 import PostProductReviewAPI from '../../services/api/product-detail-page-apis/post-new-product-review';
+import useAuthErrorHandler from '../AuthHooks/handleAuthError';
 
 const useCustomerReview = () => {
   const { query } = useRouter();
@@ -16,7 +17,8 @@ const useCustomerReview = () => {
   const [reviewList, setReviewList] = useState<any[]>([]);
   const [value, setValue] = React.useState<any>(1);
   const [showForm, setShowForm] = useState(false);
-
+  const handleAuthError = useAuthErrorHandler();
+  
   let ratingValues: any = value / 5;
   const { SUMMIT_APP_CONFIG }: any = CONSTANTS;
   const getProductReview = async () => {
@@ -28,7 +30,8 @@ const useCustomerReview = () => {
         setReviewList(productReviewData?.data?.message?.data);
       } else {
         setReviewList([]);
-        setErrMessage(productReviewData?.data?.message?.data?.error);
+        // setErrMessage(productReviewData?.data?.message?.data?.error);
+        handleAuthError(productReviewData, setIsLoading, setErrMessage);
       }
     } catch (error) {
       return;

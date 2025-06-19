@@ -9,9 +9,11 @@ import logoutUser from '../../services/api/auth/logout-api';
 import useHandleStateUpdate from './handle-state-update-hook';
 import { useRouter } from 'next/router';
 import { resetStore } from '../../store/slices/auth/logout-slice';
+import useAuthErrorHandler from '../AuthHooks/handleAuthError';
 const useNavbar = () => {
   const router = useRouter();
   const dispatch = useDispatch();
+  const handleAuthError = useAuthErrorHandler();
   const { isLoading, setIsLoading, errorMessage, setErrMessage }: any = useHandleStateUpdate();
   const { SUMMIT_APP_CONFIG }: any = CONSTANTS;
   const currency_state_from_redux: any = useSelector(currency_selector_state);
@@ -47,10 +49,12 @@ const useNavbar = () => {
         );
       } else {
         setNavbarData([]);
-        setErrMessage(navbarDataAPI?.data?.message?.error);
+        // setErrMessage(navbarDataAPI?.data?.message?.error);
+        handleAuthError(navbarDataAPI, setIsLoading, setErrMessage);
       }
     } catch (error) {
-      setErrMessage(navbarDataAPI?.data?.message?.error);
+      // setErrMessage(navbarDataAPI?.data?.message?.error);
+      handleAuthError(navbarDataAPI, setIsLoading, setErrMessage);
     } finally {
       setIsLoading(false);
     }

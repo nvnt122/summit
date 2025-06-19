@@ -10,10 +10,12 @@ import { clearCart } from '../../store/slices/cart-slices/cart-local-slice';
 import useFetchCartItems from '../CartPageHook/useFetchCartItems';
 import useHandleStateUpdate from '../GeneralHooks/handle-state-update-hook';
 import useGetStatesData from '../GeneralHooks/useGetStateList';
+import useAuthErrorHandler from '../AuthHooks/handleAuthError';
 
 const useCheckout = () => {
   const router = useRouter();
   const dispatch = useDispatch();
+  const handleAuthError = useAuthErrorHandler();
   const { cartListingItems, fetchCartListingData } = useFetchCartItems();
   const { SUMMIT_APP_CONFIG, ENABLE_PAYMENT_INTEGRATION }: any = CONSTANTS;
   const tokenFromStore: any = useSelector(get_access_token);
@@ -65,7 +67,8 @@ const useCheckout = () => {
         } else {
           // setOrderSummary({});
           toast.error('Error ');
-          setErrMessage(RazorOrderPlace?.data?.message?.error);
+          handleAuthError(RazorOrderPlace, setPlacePrderLoader, setErrMessage);
+          // setErrMessage(RazorOrderPlace?.data?.message?.error);
         }
       } catch (error) {
         setErrMessage('Failed to place order');
@@ -90,8 +93,8 @@ const useCheckout = () => {
           dispatch(clearCart());
         } else {
           // setOrderSummary({});
-          toast.error(orderPlace?.data?.message?.error);
-          setErrMessage(orderPlace?.data?.message?.error);
+          handleAuthError(orderPlace, setIsLoading, setErrMessage);
+          // toast.error(orderPlace?.data?.message?.error);
         }
       } catch (error) {
         setErrMessage('Failed to place order');

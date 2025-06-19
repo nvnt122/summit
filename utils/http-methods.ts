@@ -153,7 +153,8 @@ export const callGetAPI = async (url: string, token?: any) => {
       if (err.code === 'ECONNABORTED') {
         response = 'Request timed out. API took too long to return response.';
       } else if (err.code === 'ERR_BAD_REQUEST') {
-        response = err?.response?.data?.exception ?? `Status Code: ${err.status} Bad Request`;
+        // response = err?.response?.data?.exception ?? `Status Code: ${err.status} Bad Request`;
+        response = err?.response?.data?.exception ?? err?.response;
       } else if (err.code === 'ERR_INVALID_URL') {
         response = 'Invalid URL';
       } else {
@@ -161,7 +162,6 @@ export const callGetAPI = async (url: string, token?: any) => {
       }
     });
 
-  console.log('res', response);
   return response;
 };
 export const callPutAPI = async (url: string, body: any, token?: any) => {
@@ -183,7 +183,8 @@ export const callPutAPI = async (url: string, body: any, token?: any) => {
       if (err.code === 'ECONNABORTED') {
         response = 'Request timed out. API took too long to return response.';
       } else if (err.code === 'ERR_BAD_REQUEST') {
-        response = err?.response?.data?.exception ?? `Status Code: ${err.status} Bad Request`;
+        // response = err?.response?.data?.exception ?? `Status Code: ${err.status} Bad Request`;
+        response = err?.response?.data?.exception ?? err?.response;
       } else if (err.code === 'ERR_INVALID_URL') {
         response = 'Invalid URL';
       } else {
@@ -212,7 +213,8 @@ export const callPostAPI = async (url: string, body: any, token?: any) => {
       if (err.code === 'ECONNABORTED') {
         response = 'Request timed out. API took too long to return response.';
       } else if (err.code === 'ERR_BAD_REQUEST') {
-        response = err?.response?.data?.exception ?? `Status Code: ${err.status} Bad Request`;
+        // response = err?.response?.data?.exception ?? `Status Code: ${err.status} Bad Request`;
+        response = err?.response?.data?.exception ?? err?.response;
       } else if (err.code === 'ERR_INVALID_URL') {
         response = 'Invalid URL';
       } else {
@@ -237,7 +239,8 @@ const callDeleteAPI = async (url: string, body?: any, token?: any) => {
       if (err.code === 'ECONNABORTED') {
         response = 'Request timed out. API took too long to return response.';
       } else if (err.code === 'ERR_BAD_REQUEST') {
-        response = err?.response?.data?.exception ?? `Status Code: ${err.status} Bad Request`;
+        // response = err?.response?.data?.exception ?? `Status Code: ${err.status} Bad Request`;
+        response = err?.response?.data?.exception ?? err?.response;
       } else if (err.code === 'ERR_INVALID_URL') {
         response = 'Invalid URL';
       } else {

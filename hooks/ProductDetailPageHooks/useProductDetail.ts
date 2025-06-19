@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import fetchProductDetailData from '../../services/api/product-detail-page-apis/get-product-detail';
 import fetchProductVariant from '../../services/api/product-detail-page-apis/get-product-variants';
 import { get_access_token } from '../../store/slices/auth/token-login-slice';
@@ -9,11 +9,13 @@ import { CONSTANTS } from '../../services/config/app-config';
 import fetchStockAvailabilityOfProduct from '../../services/api/product-detail-page-apis/get-product-stock-availability';
 import fetchPinCodesListAPI from '../../services/api/general-apis/get-pin-code-list-api';
 import debounce from 'debounce';
+import useAuthErrorHandler from '../AuthHooks/handleAuthError';
 type PinCodeTypes = {
   name: string;
 };
 const useProductDetail = () => {
   const { query } = useRouter();
+  const handleAuthError = useAuthErrorHandler();
 
   const { isLoading, setIsLoading, errorMessage, setErrMessage }: any = useHandleStateUpdate();
   const { SUMMIT_APP_CONFIG }: any = CONSTANTS;
@@ -82,11 +84,7 @@ const useProductDetail = () => {
         }
       } else {
         setProductDetailData({});
-        if (Object?.keys(productDetailAPI?.data?.message?.data).length === 0) {
-          setErrMessage('Product Detail Data Not Found !!!');
-        } else {
-          setErrMessage(productDetailAPI?.data?.message?.data?.error);
-        }
+        handleAuthError(productDetailAPI, setIsLoading, setErrMessage);
       }
     } catch (error) {
       return;

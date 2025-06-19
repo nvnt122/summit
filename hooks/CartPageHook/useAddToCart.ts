@@ -8,12 +8,14 @@ import { DeleteItemFromCart } from '../../services/api/cart-apis/remove-item-api
 import { CONSTANTS } from '../../services/config/app-config';
 import { get_access_token, storeToken } from '../../store/slices/auth/token-login-slice';
 import { addCartList, addItemToCart, clearCart, removeItemFromCart } from '../../store/slices/cart-slices/cart-local-slice';
+import useAuthErrorHandler from '../AuthHooks/handleAuthError';
 
 const useAddToCartHook = () => {
   const dispatch = useDispatch();
   const tokenFromStore: any = useSelector(get_access_token);
   const getPartyName = localStorage.getItem('party_name');
   const { SUMMIT_APP_CONFIG }: any = CONSTANTS;
+  const handleAuthError = useAuthErrorHandler();
   const extractProductCodes = (data: any[]) => {
     return data?.flatMap((category) => category.orders.map((order: any) => order.item_code));
   };
@@ -27,6 +29,7 @@ const useAddToCartHook = () => {
         dispatch(addCartList({ cartData, quotationId }));
       } else {
         setCartListingItems({});
+        handleAuthError(cartListingData);
       }
       return cartListingData;
     } catch (error) {
@@ -44,6 +47,7 @@ const useAddToCartHook = () => {
       }
     } else {
       toast.error(postDataInCart?.data?.message?.error);
+      handleAuthError(postDataInCart);
     }
   };
   const placeOrderAPIFunc = async (params: any, setCartListingItems: any) => {
@@ -54,6 +58,7 @@ const useAddToCartHook = () => {
       setCartListingItems({});
     } else {
       toast.error('Failed to place order.');
+      handleAuthError(placeOrder);
     }
   };
   const RemoveItemCartAPIFunc = async (params: any, setCartListingItems: any) => {
@@ -64,6 +69,7 @@ const useAddToCartHook = () => {
       getCartList(setCartListingItems);
     } else {
       toast.error('Failed to remove product from cart');
+      handleAuthError(removeCartfunc);
     }
   };
   const cLearCartAPIFunc = async (quotation_id: any, setCartListingItems: any, setClearCartLoader: any) => {
@@ -76,6 +82,7 @@ const useAddToCartHook = () => {
         setCartListingItems({});
         toast.success('Cart cleared successfully!');
       } else {
+        handleAuthError(clearCartfunc);
         toast.error('Failed to clear cart.');
       }
     } catch (error) {

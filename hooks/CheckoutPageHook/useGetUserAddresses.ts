@@ -10,6 +10,7 @@ import { PostAddToCartAPI } from '../../services/api/cart-apis/add-to-cart-api';
 import { PostAddressAPI, PostNewAddressAPI } from '../../services/api/checkout/post-user-address-api';
 import { toast } from 'react-toastify';
 import useModalShow from './useModalShow';
+import useAuthErrorHandler from '../AuthHooks/handleAuthError';
 
 const useGetUserAddresses = () => {
   const { SUMMIT_APP_CONFIG }: any = CONSTANTS;
@@ -67,6 +68,7 @@ const useGetUserAddresses = () => {
   const [editBillingAddress, setEditBillingAddress] = useState({});
 
   const dispatch = useDispatch();
+  const handleAuthError = useAuthErrorHandler();
 
   const pushFieldArray: any = [];
   const fetchUserShippingAddress = async (token?: any) => {
@@ -77,7 +79,8 @@ const useGetUserAddresses = () => {
         setShippingAddress([...userShippingAddressData?.data?.message?.data]);
       } else {
         setShippingAddress([]);
-        setShippingAddressError(userShippingAddressData?.data?.message?.error);
+        // setShippingAddressError(userShippingAddressData?.data?.message?.error);
+        handleAuthError(userShippingAddressData, setShippingAddessLoading, setShippingAddressError);
       }
     } catch (error) {
       setShippingAddressError('Failed to fetch Shipping Address data.');
@@ -93,7 +96,8 @@ const useGetUserAddresses = () => {
         setBillingAddress([...userShippingAddressData?.data?.message?.data]);
       } else {
         setBillingAddress([]);
-        setBillingAddressError(userShippingAddressData?.data?.message?.error);
+        // setBillingAddressError(userShippingAddressData?.data?.message?.error);
+        handleAuthError(userShippingAddressData, setBillingAddressLoading, setBillingAddressError);
       }
     } catch (error) {
       setBillingAddressError('Failed to fetch Billing Address data.');
