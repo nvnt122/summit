@@ -6,7 +6,7 @@ const withBundleAnalyzer = require('@next/bundle-analyzer')({
 });
 const nextConfig = {
   images: {
-    domains: ['summit.8848digitalerp.com', 'staging-twinkle.8848digitalerp.com', 'emr-euro-shine.8848digitalerp.com', 'backend.atelier-reya.com', 'localhost'],
+    domains: ['summit.8848digitalerp.com', 'staging-twinkle.8848digitalerp.com', 'emr-euro-shine.8848digitalerp.com', 'backend.atelier-reya.com', 'localhost', 'staging-b2b-backend.atelier-reya.com'],
     formats: ['image/avif', 'image/webp'],
   },    
   reactStrictMode: false,
