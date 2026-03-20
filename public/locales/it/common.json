@@ -572,5 +572,7 @@
   "Item Selected": "Articolo selezionato",
   "Apply": "Applica",
   "Stock Cart": "Carrello scorte",
-  "profile": "Profilo"
+  "profile": "Profilo",
+
+  "password_must_be_6_to_10_chars_alphanumeric": "La password deve contenere da 6 a 10 caratteri e includere almeno una lettera, un numero e un carattere speciale (@$!%*?&)"
 }

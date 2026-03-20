@@ -557,5 +557,7 @@
   "Item Selected": "Artikel ausgewählt",
   "Apply": "Anwenden",
   "Stock Cart": "Warenkorb",
-  "profile": "Profil"
+  "profile": "Profil",
+    
+  "password_must_be_6_to_10_chars_alphanumeric": "Das Passwort muss 6 bis 10 Zeichen lang sein und mindestens einen Buchstaben, eine Zahl und ein Sonderzeichen enthalten (@$!%*?&)"
 }

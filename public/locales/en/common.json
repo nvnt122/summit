@@ -571,5 +571,7 @@
   "Item Selected": "Item Selected",
   "Apply": "Apply",
   "Stock Cart": "Stock Cart",
-  "profile": "Profile"
+  "profile": "Profile",
+  
+  "password_must_be_6_to_10_chars_alphanumeric": "Password must be 6–10 characters and include at least 1 letter, 1 number, and 1 special character (@$!%*?&)"
 }

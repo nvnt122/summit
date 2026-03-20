@@ -572,5 +572,7 @@
   "Item Selected": "Artículo seleccionado",
   "Apply": "Aplicar",
   "Stock Cart": "Carrito de stock",
-  "profile": "Perfil"
+  "profile": "Perfil",
+
+  "password_must_be_6_to_10_chars_alphanumeric": "La contraseña debe tener entre 6 y 10 caracteres e incluir al menos una letra, un número y un carácter especial (@$!%*?&)"
 }

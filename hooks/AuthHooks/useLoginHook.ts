@@ -46,6 +46,8 @@ const useLoginHook = () => {
       const tokenData = await emrLogin(userParams);
 
       if (tokenData?.success === true && tokenData?.msg === 'success' && tokenData?.data?.hasOwnProperty('access_token')) {
+        document.cookie = `auth_token=${tokenData?.data?.access_token}; path=/; max-age=${60 * 60 * 24}; SameSite=Lax`;
+
         localStorage.setItem('isLoggedIn', 'true');
         localStorage.setItem('user', values.usr);
         localStorage.setItem('party_name', tokenData?.data?.full_name);

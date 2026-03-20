@@ -571,5 +571,7 @@
   "Item Selected": "Article sélectionné",
   "Apply": "Appliquer",
   "Stock Cart": "Panier de stock",
-  "profile": "Profil"
+  "profile": "Profil",
+
+  "password_must_be_6_to_10_chars_alphanumeric": "Le mot de passe doit contenir entre 6 et 10 caractères et inclure au moins une lettre, un chiffre et un caractère spécial (@$!%*?&)"
 }
