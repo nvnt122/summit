@@ -94,6 +94,7 @@
   "enter_your_password": "Entrez votre mot de passe",
   "enter_your_mobile_number": "Entrez votre numéro de mobile",
   "email_is_required": "Le champ e-mail est obligatoire",
+  "name_is_required": "Le champ nom est requis",
   "user_id_is_required": "Le champ ID utilisateur est obligatoire",
   "password_is_required": "Le champ Mot de passe est obligatoire",
   "confirm_password_is_required": "Le champ Confirmer le mot de passe est obligatoire",

@@ -95,6 +95,7 @@
   "enter_your_mobile_number": "Introduce tu número de móvil",
   "email_is_required": "El campo de correo electrónico es obligatorio",
   "user_id_is_required": "El campo ID de usuario es obligatorio",
+  "name_is_required": "El campo nombre es obligatorio",
   "password_is_required": "El campo de contraseña es obligatorio",
   "confirm_password_is_required": "El campo Confirmar contraseña es obligatorio",
   "mobile_is_required": "El campo Número de móvil es obligatorio",

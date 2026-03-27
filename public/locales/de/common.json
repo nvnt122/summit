@@ -95,6 +95,7 @@
   "enter_your_mobile_number": "Geben Sie Ihre Handynummer ein",
   "email_is_required": "Das E-Mail-Feld ist erforderlich",
   "user_id_is_required": "Das Feld Benutzer-ID ist erforderlich",
+  "name_is_required": "Namensfeld ist erforderlich",
   "password_is_required": "Das Passwortfeld ist erforderlich",
   "confirm_password_is_required": "Das Feld Passwort bestätigen ist erforderlich",
   "mobile_is_required": "Das Feld Handynummer ist erforderlich",
