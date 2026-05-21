@@ -17,6 +17,7 @@ import { currencyOptions } from '../../utils/addon-utils/currency-map';
 import useUserDefaultData from '../addon-hooks/kc-hooks/useUserData';
 import { setCustomer, setDesignBankCount, setScope } from '../../store/slices/general_slices/kc-slice';
 import { resetStore } from '../../store/slices/auth/logout-slice';
+import { setExternalData } from '../../store/slices/general_slices/external-redirect-slice';
 
 const useLoginHook = () => {
   const { AFTER_LOGIN_REDIRECT_URL } = CONSTANTS;
@@ -37,7 +38,7 @@ const useLoginHook = () => {
 
   const fetchToken = async (values: TypeLoginForm) => {
     setLoginBtnLoader(true);
-  
+
     try {
       const userParams: TypeLoginAPIParams = {
         values: { ...values },
@@ -45,27 +46,42 @@ const useLoginHook = () => {
         loginViaOTP: false,
         LoginViaGoogle: false,
       };
-  
+
       const tokenData = await emrLogin(userParams);
-  
-      if (
-        tokenData?.success === true &&
-        tokenData?.msg === 'success' &&
-        tokenData?.data?.access_token
-      ) {
+
+      if (tokenData?.success === true && tokenData?.msg === 'success' && tokenData?.data?.access_token) {
         const { access_token, isPwdChg, count, full_name } = tokenData.data;
-  
+
         if (isPwdChg !== 0) {
           dispatch(storeToken(tokenData.data));
         }
-  
-        const redirectUrl =
-          isPwdChg === 0
-            ? '/forgot_password'
-            : AFTER_LOGIN_REDIRECT_URL || '/';
-  
+
+        let redirectUrl: string | any = isPwdChg === 0 ? '/forgot_password' : AFTER_LOGIN_REDIRECT_URL || '/';
+
+        if (CONSTANTS.ENABLE_REDIRECT_FROM_CRM && router.query.is_external_redirect === '1') {
+          const { is_external_redirect, ...restQuery } = router.query;
+
+          dispatch(
+            setExternalData({
+              lead_id: restQuery.lead_id || null,
+              cmcd: restQuery.cmcd || null,
+              user_id: restQuery.user_id || null,
+              originalUrl: router.asPath,
+              query: restQuery,
+              from_crm: restQuery.from_crm === '1' ? true : false,
+            })
+          );
+
+          console.log('restQuery', restQuery);
+
+          redirectUrl = {
+            pathname: AFTER_LOGIN_REDIRECT_URL,
+            query: restQuery,
+          };
+        }
+
         router.replace(redirectUrl);
-  
+
         setTimeout(() => {
           dispatch(setDesignBankCount(count));
           dispatch(setCustomer(null));
@@ -75,19 +91,16 @@ const useLoginHook = () => {
               value: 'Database',
             })
           );
-  
+
           fetchUserDefaultData(access_token);
-  
+
           localStorage.setItem('isLoggedIn', 'true');
           localStorage.setItem('user', values.usr);
           localStorage.setItem('party_name', full_name);
         }, 0);
       }
     } catch (error: any) {
-      if (
-        error?.status === 400 &&
-        error?.response?.data?.error === 'Invalid username or password'
-      ) {
+      if (error?.status === 400 && error?.response?.data?.error === 'Invalid username or password') {
         toast.error(t('invalid_credentials'));
       } else {
         toast.error(t('error_while_login'));
@@ -100,7 +113,7 @@ const useLoginHook = () => {
   useEffect(() => {
     dispatch(setShowSessionExpiredModalFalse());
   }, []);
-  
+
   return { passwordHidden, togglePasswordIcon, fetchToken, loginBtnLoader };
 };
 

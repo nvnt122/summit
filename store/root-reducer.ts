@@ -13,6 +13,7 @@ import quickOrderSlice from './slices/quick-order-slice/quick-order-slice';
 import componentsReducer from './slices/general_slices/components-slice';
 import SelectedLangDataScreen from './slices/general_slices/multilingual-slice';
 import kcSlice from './slices/general_slices/kc-slice';
+import externalRedirectReducer from './slices/general_slices/external-redirect-slice';
 
 const appReducer = combineReducers({
   LanguagesScreen: LanguageReducer,
@@ -28,6 +29,7 @@ const appReducer = combineReducers({
   catalogSlice: catalogLocalSlice,
   quickOrder: quickOrderSlice,
   KCSlice: kcSlice,
+  externalRedirect: externalRedirectReducer,
 });
 
 const rootReducer = (state: any, action: any) => {
