@@ -17,6 +17,7 @@ interface RepoAccessTokenState {
   error: string;
   isLoading: 'idle' | 'pending' | 'succeeded' | 'failed';
   showSessionExpiredModal: boolean;
+  UserName: string;
 }
 
 const initialState: RepoAccessTokenState = {
@@ -24,6 +25,7 @@ const initialState: RepoAccessTokenState = {
   error: '',
   isLoading: 'idle',
   showSessionExpiredModal: false,
+  UserName: '',
 };
 
 export const GetAccessTokenScreen = createSlice({
@@ -65,6 +67,9 @@ export const GetAccessTokenScreen = createSlice({
     setShowSessionExpiredModalFalse(state) {
       state.showSessionExpiredModal = false;
     },
+    setUserName(state, action) {
+      state.UserName = action?.payload || '';
+    },
   },
   extraReducers: (builder) => {
     builder.addCase(getAccessToken.pending, (state) => {
@@ -97,6 +102,7 @@ export const GetAccessTokenScreen = createSlice({
   },
 });
 export const get_access_token = (state: RootState) => state.GetAccessTokenScreen;
-export const { storeToken, clearToken, updateAccessToken, setShowSessionExpiredModalTrue, setShowSessionExpiredModalFalse }: any = GetAccessTokenScreen.actions;
+export const get_user_name = (state: RootState) => state.GetAccessTokenScreen.UserName;
+export const { storeToken, clearToken, updateAccessToken, setShowSessionExpiredModalTrue, setShowSessionExpiredModalFalse, setUserName }: any = GetAccessTokenScreen.actions;
 
 export default GetAccessTokenScreen.reducer;
