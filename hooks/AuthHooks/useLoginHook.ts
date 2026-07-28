@@ -4,7 +4,7 @@ import { useRouter } from 'next/router';
 import { toast } from 'react-toastify';
 import { TypeLoginAPIParams, TypeLoginForm } from '../../interfaces/login-params-interface';
 import getTokenFromLoginAPI, { emrLogin } from '../../services/api/auth/get-token-from-login-api';
-import { setShowSessionExpiredModalFalse, storeToken } from '../../store/slices/auth/token-login-slice';
+import { setShowSessionExpiredModalFalse, storeToken, setUserName } from '../../store/slices/auth/token-login-slice';
 import { CONSTANTS } from '../../services/config/app-config';
 import { setDefaultCurrencyValue } from '../../store/slices/general_slices/multi-currency-slice';
 import { useTranslation } from 'react-i18next';
@@ -82,6 +82,8 @@ const useLoginHook = () => {
           );
 
           fetchUserDefaultData(access_token);
+
+          dispatch(setUserName(values.usr));
 
           localStorage.setItem('isLoggedIn', 'true');
           localStorage.setItem('user', values.usr);
