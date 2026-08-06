@@ -380,5 +380,6 @@
   "next": "Next",
   "previous": "Previous",
   "memo": "Memo",
-  "sync_pdcm_stock": "Sync PDCM/Stock"
+  "sync_pdcm_stock": "Sync PDCM/Stock",
+  "send_to_product_development": "Send to PD"
 }
