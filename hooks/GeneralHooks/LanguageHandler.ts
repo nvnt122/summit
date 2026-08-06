@@ -15,7 +15,7 @@ const useCurrencyLanguageHandler = () => {
   const TokenFromStore: any = useSelector(get_access_token);
   const currencyState = useSelector(currency_selector_state)?.selected_currency_value;
   const handleAuthError = useAuthErrorHandler();
-  const selectedCurrency = currencyOptions.find((opt) => opt?.value === (currencyState))!;
+  const selectedCurrency = currencyOptions.find((opt) => opt?.value === (currencyState || ''))!;
   const selectedLanguage = languageDisplayOptions.find((opt) => opt?.value === languageState)!;
 
   const updateUserPreference = async (language: Option, currency: Option) => {
