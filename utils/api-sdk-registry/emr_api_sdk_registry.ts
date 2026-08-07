@@ -67,6 +67,9 @@ const emrAPISDKRegistry = {
     'get-order-catalogue-pdf-api': '/api/report/kc/order-catalogue/pdf',
     'get-detailed-quotation-excel-api': '/api/report/kc/detailed-quotation/multi-sheet-excel',
     'get-zero-rate-excel-api': '/api/report/kc/zero-rate-item-list/multi-sheet-excel',
+    'get-cart-head-info-api': '/api/getCartHeadInfo',
+    'get-lme-rates-by-date-api': '/api/getLmeRatesByDate',
+    'save-doc-api': '/api/saveDoc',
 } as const;
 
 export type EMRApiKey = keyof typeof emrAPISDKRegistry;
