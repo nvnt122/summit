@@ -1,3 +1,4 @@
+#!/bin/bash
 # This script fetches summit settings based on the value of the environment variable NEXT_PUBLIC_ENGINE_NAME.
 # 
 # Usage:
@@ -24,7 +25,6 @@
 #
 # Future Considerations:
 # - Additional engine names can be supported by uncommenting and modifying the elif block for unsupported values.
-#!/bin/bash
 
 # Load environment variables
 if [ ! -f ".env" ]; then

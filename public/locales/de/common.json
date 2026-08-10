@@ -365,5 +365,6 @@
   "next": "Next",
   "previous": "Previous",
   "memo": "Memo",
-  "sync_pdcm_stock": "PDCM/Bestand synchronisieren"
+  "sync_pdcm_stock": "PDCM/Bestand synchronisieren",
+  "send_to_product_development": "An PD senden"
 }

@@ -62,10 +62,13 @@ const useLoginHook = () => {
           dispatch(storeToken(tokenData.data));
         }
 
+        const pendingRedirect = typeof router.query.redirect === 'string' ? router.query.redirect : '';
+        const isSafeRedirect = pendingRedirect.startsWith('/') && !pendingRedirect.startsWith('//');
+
         const redirectUrl =
           isPwdChg === 0
             ? '/forgot_password'
-            : AFTER_LOGIN_REDIRECT_URL || '/';
+            : (isSafeRedirect ? pendingRedirect : AFTER_LOGIN_REDIRECT_URL) || '/';
 
         await router.replace(redirectUrl);
 

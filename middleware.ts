@@ -1,6 +1,17 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
+function buildLoginRedirect(request: NextRequest) {
+  const url = request.nextUrl.clone();
+  const originalPath = `${request.nextUrl.pathname}${request.nextUrl.search}`;
+  url.pathname = '/login';
+  url.search = '';
+  if (originalPath && originalPath !== '/login') {
+    url.searchParams.set('redirect', originalPath);
+  }
+  return url;
+}
+
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
@@ -14,17 +25,14 @@ export async function middleware(request: NextRequest) {
   if (!isPublicPath) {
     // PROTECTED ROUTE CHECK
     if (!token) {
-      const url = request.nextUrl.clone();
-      url.pathname = '/login';
-      url.search = '';
-      return NextResponse.redirect(url);
+      return NextResponse.redirect(buildLoginRedirect(request));
     }
 
     // ACTIVE TOKEN VALIDATION VIA API
     try {
       const apiHost = process.env.NEXT_PUBLIC_API_URL;
       const apiUrl = `${apiHost}/api/getUserDeafults`;
-      
+
       const response = await fetch(apiUrl, {
         method: 'GET',
         headers: {
@@ -35,11 +43,7 @@ export async function middleware(request: NextRequest) {
 
       if (!response.ok || response.status === 403 || response.status === 401) {
         // Token has expired or is invalid! Clear the cookie and redirect to login
-        const url = request.nextUrl.clone();
-        url.pathname = '/login';
-        url.search = '';
-        
-        const redirectResponse = NextResponse.redirect(url);
+        const redirectResponse = NextResponse.redirect(buildLoginRedirect(request));
         redirectResponse.cookies.set('token', '', { path: '/', maxAge: 0 });
         return redirectResponse;
       }
@@ -63,9 +67,15 @@ export async function middleware(request: NextRequest) {
         });
 
         if (response.ok && response.status !== 403 && response.status !== 401) {
-          // Already authenticated and token is valid - redirect from /login to home
+          // Already authenticated and token is valid - honor a pending
+          // `redirect` (e.g. reached /login mid hand-off) or fall back home.
           const url = request.nextUrl.clone();
+          const pendingRedirect = request.nextUrl.searchParams.get('redirect');
+          if (pendingRedirect && pendingRedirect.startsWith('/') && !pendingRedirect.startsWith('//')) {
+            return NextResponse.redirect(new URL(pendingRedirect, request.url));
+          }
           url.pathname = '/product-category';
+          url.search = '';
           return NextResponse.redirect(url);
         }
       } catch (error) {
