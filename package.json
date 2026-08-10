@@ -5,10 +5,10 @@
   "scripts": {
     "summit": "sh -c './check-if-theme-exists.sh' && npm run dev",
     "predev": "sh -c ./fetch-summit-settings.sh",
-    "dev": "next dev",
+    "dev": "cross-env NODE_OPTIONS=--no-network-family-autoselection next dev",
     "prebuild": "sh -c ./fetch-summit-settings.sh",
     "build": "cross-env NODE_ENV=production next build",
-    "start": "next start",
+    "start": "cross-env NODE_OPTIONS=--no-network-family-autoselection next start",
     "test": "jest",
     "format": "prettier --write .",
     "lint:indent": "prettier --check '**/*.{js,jsx,ts,tsx,json,css,scss,md}'",

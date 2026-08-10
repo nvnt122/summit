@@ -1,6 +1,23 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
+// Fail fast on a slow/unreachable backend connect so a stuck request doesn't
+// hang the middleware for undici's full ~10s connect timeout on every
+// navigation. The callers already tolerate failures (they log and continue,
+// or ignore), so aborting early only trims latency.
+const TOKEN_VALIDATION_TIMEOUT_MS = 4000;
+
+function validateToken(apiUrl: string, token: string) {
+  return fetch(apiUrl, {
+    method: 'GET',
+    headers: {
+      'Authorization': token.startsWith('token ') ? token : `token ${token}`,
+      'Accept': 'application/json',
+    },
+    signal: AbortSignal.timeout(TOKEN_VALIDATION_TIMEOUT_MS),
+  });
+}
+
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
@@ -24,14 +41,8 @@ export async function middleware(request: NextRequest) {
     try {
       const apiHost = process.env.NEXT_PUBLIC_API_URL;
       const apiUrl = `${apiHost}/api/getUserDeafults`;
-      
-      const response = await fetch(apiUrl, {
-        method: 'GET',
-        headers: {
-          'Authorization': token.startsWith('token ') ? token : `token ${token}`,
-          'Accept': 'application/json',
-        },
-      });
+
+      const response = await validateToken(apiUrl, token);
 
       if (!response.ok || response.status === 403 || response.status === 401) {
         // Token has expired or is invalid! Clear the cookie and redirect to login
@@ -54,13 +65,7 @@ export async function middleware(request: NextRequest) {
         const apiHost = process.env.NEXT_PUBLIC_API_URL;
         const apiUrl = `${apiHost}/api/getUserDeafults`;
 
-        const response = await fetch(apiUrl, {
-          method: 'GET',
-          headers: {
-            'Authorization': token.startsWith('token ') ? token : `token ${token}`,
-            'Accept': 'application/json',
-          },
-        });
+        const response = await validateToken(apiUrl, token);
 
         if (response.ok && response.status !== 403 && response.status !== 401) {
           // Already authenticated and token is valid - redirect from /login to home
