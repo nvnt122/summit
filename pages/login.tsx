@@ -50,11 +50,9 @@ const login = ({ serverDataForPages }: ServerDataTypes) => {
   function checkIfUserIsAuthorized() {
     const checkUserStatus = checkAuthorizedUser();
     if (checkUserStatus) {
-      if (AFTER_LOGIN_REDIRECT_URL) {
-        router.push(AFTER_LOGIN_REDIRECT_URL);
-      } else {
-        router.push('/');
-      }
+      const pendingRedirect = typeof router.query.redirect === 'string' ? router.query.redirect : '';
+      const isSafeRedirect = pendingRedirect.startsWith('/') && !pendingRedirect.startsWith('//');
+      router.push(isSafeRedirect ? pendingRedirect : AFTER_LOGIN_REDIRECT_URL || '/');
     } else {
       return renderLoginComponent();
     }
