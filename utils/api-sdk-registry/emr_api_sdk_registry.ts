@@ -70,6 +70,8 @@ const emrAPISDKRegistry = {
     'get-cart-head-info-api': '/api/getCartHeadInfo',
     'get-lme-rates-by-date-api': '/api/getLmeRatesByDate',
     'save-doc-api': '/api/saveDoc',
+    'get-design-facets-api': '/api/getDesignFacets',
+    'logout-api': '/api/logout',
 } as const;
 
 export type EMRApiKey = keyof typeof emrAPISDKRegistry;

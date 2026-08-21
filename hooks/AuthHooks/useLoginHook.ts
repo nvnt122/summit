@@ -31,12 +31,16 @@ const useLoginHook = () => {
   const [isLoginThroughOTP, setIsLoginThroughOTP] = useState<boolean>(false);
   const [isLoginThroughGoogle, setIsLoginThroughGoogle] = useState<boolean>(false);
   const [loginBtnLoader, setLoginBtnLoader] = useState<boolean>(false);
+  // Set when login returns 409 SESSION_ACTIVE — holds what the confirmation
+  // modal needs to display (device/activeSince) plus the submitted values, so
+  // confirming can resubmit the exact same login with kill_previous_session.
+  const [sessionConflict, setSessionConflict] = useState<{ device: string; activeSince: string; values: TypeLoginForm } | null>(null);
   const togglePasswordIcon = (e: React.MouseEvent) => {
     e.preventDefault();
     setPasswordHidden(!passwordHidden);
   };
 
-  const fetchToken = async (values: TypeLoginForm) => {
+  const fetchToken = async (values: TypeLoginForm, killPreviousSession = false) => {
     setLoginBtnLoader(true);
 
     try {
@@ -45,6 +49,7 @@ const useLoginHook = () => {
         isGuest: false,
         loginViaOTP: false,
         LoginViaGoogle: false,
+        killPreviousSession,
       };
 
       const tokenData = await emrLogin(userParams);
@@ -92,6 +97,12 @@ const useLoginHook = () => {
       }
     } catch (error: any) {
       if (
+        error?.response?.status === 409 &&
+        error?.response?.data?.code === 'SESSION_ACTIVE'
+      ) {
+        const { activeSince, device } = error?.response?.data?.data || {};
+        setSessionConflict({ device, activeSince, values });
+      } else if (
         error?.status === 400 &&
         error?.response?.data?.error === 'Invalid username or password'
       ) {
@@ -104,11 +115,32 @@ const useLoginHook = () => {
     }
   };
 
+  // "Log in here" on the session-conflict modal — resubmits the exact same
+  // credentials with kill_previous_session so the other session is dropped.
+  const confirmKillPreviousSession = () => {
+    if (!sessionConflict) return;
+    const { values } = sessionConflict;
+    setSessionConflict(null);
+    fetchToken(values, true);
+  };
+
+  // "Continue that session" — abandons this login attempt, leaves the other
+  // session untouched.
+  const dismissSessionConflict = () => setSessionConflict(null);
+
   useEffect(() => {
     dispatch(setShowSessionExpiredModalFalse());
   }, []);
 
-  return { passwordHidden, togglePasswordIcon, fetchToken, loginBtnLoader };
+  return {
+    passwordHidden,
+    togglePasswordIcon,
+    fetchToken,
+    loginBtnLoader,
+    sessionConflict,
+    confirmKillPreviousSession,
+    dismissSessionConflict,
+  };
 };
 
 export default useLoginHook;

@@ -29,6 +29,7 @@ export const emrLogin = async (loginParams: any) => {
   const body = {
     username: usr,
     password: pwd,
+    ...(loginParams?.killPreviousSession ? { kill_previous_session: true } : {}),
   };
   let response: any;
   await axios.post(`${CONSTANTS.API_BASE_URL}/api/login`, body).then((res) => {
