@@ -7,6 +7,7 @@ export interface TypeLoginAPIParams {
   isGuest: boolean;
   loginViaOTP: boolean;
   LoginViaGoogle: boolean;
+  killPreviousSession?: boolean;
 }
 
 export interface TypeRegistrationForm {

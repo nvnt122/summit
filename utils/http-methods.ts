@@ -5,6 +5,32 @@ import fetchAPISDK from "../utils/get-api-sdk";
 import axios from "axios";
 import { EMRApiKey } from "./api-sdk-registry/emr_api_sdk_registry";
 import APP_CONFIG from "../interfaces/app-config-interface";
+import { store } from "../store/store";
+import { clearToken } from "../store/slices/auth/token-login-slice";
+import Router from "next/router";
+import { toast } from "react-toastify";
+
+/**
+ * Centralized 401 handling for every authenticated request in the app (every
+ * addon API call funnels through the four call*API functions below). On a
+ * plain expired/invalid token this mirrors what handleAuthError.ts already
+ * does for its few existing callers (clear token + redirect to /login); on
+ * code SESSION_SUPERSEDED (token killed by a newer login elsewhere) it also
+ * surfaces a one-time toast explaining why. Guarded by a one-shot flag so N
+ * concurrent in-flight requests failing together only redirect/toast once —
+ * never reset, since the redirect navigates away from the app entirely.
+ */
+let sessionInvalidationHandled = false;
+const handleGlobalAuthError = (err: any) => {
+  if (err?.response?.status !== 401 || sessionInvalidationHandled) return;
+  sessionInvalidationHandled = true;
+
+  if (err?.response?.data?.code === "SESSION_SUPERSEDED") {
+    toast.warning(err?.response?.data?.message || "Your session was logged out — you are now logged in on a new device.");
+  }
+  store.dispatch(clearToken());
+  Router.push("/login");
+};
 
 /**
  * @function getVME - VME stands for Version, Method and Entity for that API function.
@@ -176,6 +202,7 @@ export const callGetAPI = async (url: string, token?: any, isBlob?: boolean) => 
       response = res;
     })
     .catch((err: any) => {
+      handleGlobalAuthError(err);
       if (err.code === "ECONNABORTED") {
         response = "Request timed out. API took too long to return response.";
       } else if (err.code === "ERR_BAD_REQUEST") {
@@ -207,6 +234,7 @@ export const callPutAPI = async (url: string, body: any, token?: any) => {
       response = res;
     })
     .catch((err: any) => {
+      handleGlobalAuthError(err);
       if (err.code === "ECONNABORTED") {
         response = "Request timed out. API took too long to return response.";
       } else if (err.code === "ERR_BAD_REQUEST") {
@@ -239,6 +267,7 @@ export const callPostAPI = async (url: string, body: any, token?: any, isBlob?: 
       response = res;
     })
     .catch((err: any) => {
+      handleGlobalAuthError(err);
       if (err.code === "ECONNABORTED") {
         response = "Request timed out. API took too long to return response.";
       } else if (err.code === "ERR_BAD_REQUEST") {
@@ -265,6 +294,7 @@ const callDeleteAPI = async (url: string, body?: any, token?: any) => {
       response = res;
     })
     .catch((err: any) => {
+      handleGlobalAuthError(err);
       if (err.code === "ECONNABORTED") {
         response = "Request timed out. API took too long to return response.";
       } else if (err.code === "ERR_BAD_REQUEST") {
