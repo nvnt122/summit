@@ -39,6 +39,17 @@ interface FiltersState {
   attributesData: any[] | null,
   companyCode: string | null,
   cartHeadInfo: { CT: any; SCT: any } | null,
+  // Set at login from the 'AutoFilter' dynamic-config section (scope='All').
+  // When true, the first Filter-sectionType dynamic config resolved for the
+  // scope that config selected should be auto-applied (not just pre-filled)
+  // on the product-category page. Consumed (reset to false) once that
+  // auto-apply actually runs.
+  autoFilterPreApply: boolean,
+  // Only set when the AutoFilter config's resolved scope is 'Voucher' and
+  // preApply is true. Consumed (reset to null) alongside autoFilterPreApply
+  // once the auto-apply runs, same one-shot lifecycle.
+  autoFilterVoucherNo: { OdCoCd: string; OdTc: string; OdYy: string; OdChr: string; OdNo: string } | null,
+  autoFilterVoucherType: { label: string; value: string } | null,
 }
 
 const initialState: FiltersState = {
@@ -71,6 +82,9 @@ const initialState: FiltersState = {
   attributesData: [],
   companyCode: null,
   cartHeadInfo: null,
+  autoFilterPreApply: false,
+  autoFilterVoucherNo: null,
+  autoFilterVoucherType: null,
 };
 
 export const KCSlice = createSlice({
@@ -188,10 +202,19 @@ export const KCSlice = createSlice({
     setCartHeadInfo: (state, action) => {
       state.cartHeadInfo = action.payload;
     },
+    setAutoFilterPreApply: (state, action) => {
+      state.autoFilterPreApply = action.payload;
+    },
+    setAutoFilterVoucherNo: (state, action) => {
+      state.autoFilterVoucherNo = action.payload;
+    },
+    setAutoFilterVoucherType: (state, action) => {
+      state.autoFilterVoucherType = action.payload;
+    },
   },
 })
 
-export const { setHideFiltersOnFirstLoad, setGridCols, setGoldRate, setPalladiumRate, setPlatinumRate, setSilverRate, setMetalRateSidebar, setPrevCSFilters, setFilters, setFiltersSetOfAPI, setCurrentScope, setCurrentSubScope, setCustomer, setScope, setUserDefaultData, setUserDefaultLoading, setUserDefaultSidebar, setDesignBankCount, setGradeChangeList, setDiamondChangeList, setColorStoneChangeList, setCustomiseFilters, setShowProductCardDetails, setSelectAllProducts, setToggleProductView, setDesignSizes, setAttributesData, setCompanyCode, setCartHeadInfo } = KCSlice.actions;
+export const { setHideFiltersOnFirstLoad, setGridCols, setGoldRate, setPalladiumRate, setPlatinumRate, setSilverRate, setMetalRateSidebar, setPrevCSFilters, setFilters, setFiltersSetOfAPI, setCurrentScope, setCurrentSubScope, setCustomer, setScope, setUserDefaultData, setUserDefaultLoading, setUserDefaultSidebar, setDesignBankCount, setGradeChangeList, setDiamondChangeList, setColorStoneChangeList, setCustomiseFilters, setShowProductCardDetails, setSelectAllProducts, setToggleProductView, setDesignSizes, setAttributesData, setCompanyCode, setCartHeadInfo, setAutoFilterPreApply, setAutoFilterVoucherNo, setAutoFilterVoucherType } = KCSlice.actions;
 export const KCFromStore = (state: any) => {
   const slice = state.KCSlice;
   const rawCompany = slice.companyCode;

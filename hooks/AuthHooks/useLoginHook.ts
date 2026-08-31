@@ -15,9 +15,12 @@ import i18n from '../../i18n/i18n';
 import useCurrencyLanguageHandler from '../GeneralHooks/LanguageHandler';
 import { currencyOptions } from '../../utils/addon-utils/currency-map';
 import useUserDefaultData from '../addon-hooks/kc-hooks/useUserData';
-import { setCustomer, setDesignBankCount, setScope } from '../../store/slices/general_slices/kc-slice';
+import { setCustomer, setCurrentScope, setDesignBankCount, setScope, setAutoFilterPreApply, setAutoFilterVoucherNo, setAutoFilterVoucherType } from '../../store/slices/general_slices/kc-slice';
 import { resetStore } from '../../store/slices/auth/logout-slice';
 import { persistor } from '../../store/store';
+import fetchDynamicConfig from '../../services/api/general-apis/get-dynamic-config';
+import { AUTO_FILTER_SECTION_TYPE, AUTO_FILTER_SCOPE_FIELD_CODE, AUTO_FILTER_PRE_APPLY_FIELD_CODE, AUTO_FILTER_VOUCHER_NO_FIELD_CODE, AUTO_FILTER_VOUCHER_TYPE_FIELD_CODE, parseAutoFilterVoucherNo } from '../../utils/addon-utils/auto-filter-config';
+import { SCOPE_LABEL_TO_VALUE, ScopeLabel } from '../../components/addon-components/TwoLevelSidebar/filterConfig';
 
 const useLoginHook = () => {
   const { AFTER_LOGIN_REDIRECT_URL } = CONSTANTS;
@@ -38,6 +41,56 @@ const useLoginHook = () => {
   const togglePasswordIcon = (e: React.MouseEvent) => {
     e.preventDefault();
     setPasswordHidden(!passwordHidden);
+  };
+
+  // Resolves which scope the product-category page should preselect (and
+  // whether that scope's filters should be auto-applied) from the
+  // 'AutoFilter' dynamic-config section — scoped 'All', personalised per the
+  // logged-in user via the auth token. Falls back to the previous hardcoded
+  // Design Bank / no-auto-apply behaviour if the config is missing or the
+  // call fails, so login never breaks on account of this lookup.
+  const { SUMMIT_APP_CONFIG }: any = CONSTANTS;
+  const applyAutoFilterScope = async (token: string) => {
+    const fallback = { label: 'PDCM Design Bank', value: 'PDCM Design Bank' };
+    try {
+      const response: any = await fetchDynamicConfig(
+        SUMMIT_APP_CONFIG,
+        { scope: 'All', sectionType: AUTO_FILTER_SECTION_TYPE },
+        token
+      );
+
+      if (response?.status !== 200 || !response?.data?.success) {
+        dispatch(setScope(fallback));
+        return;
+      }
+
+      const sectionData = response?.data?.data?.find((item: any) => item.code === AUTO_FILTER_SECTION_TYPE);
+      const fields = sectionData?.fields || [];
+      const scopeLabel = fields.find((f: any) => f.code === AUTO_FILTER_SCOPE_FIELD_CODE)?.value as ScopeLabel | undefined;
+      const preApply = fields.find((f: any) => f.code === AUTO_FILTER_PRE_APPLY_FIELD_CODE)?.value === 'Y';
+
+      const resolvedValue = scopeLabel && SCOPE_LABEL_TO_VALUE[scopeLabel] ? SCOPE_LABEL_TO_VALUE[scopeLabel] : fallback.value;
+      const resolvedScope = { label: resolvedValue, value: resolvedValue };
+
+      dispatch(setScope(resolvedScope));
+      dispatch(setCurrentScope(resolvedValue));
+      dispatch(setAutoFilterPreApply(preApply));
+
+      // Voucher No / Voucher Type are only relevant (and only ever populated
+      // by the config) when the resolved scope is Voucher, and are only
+      // meaningful to apply alongside the rest of the auto-filter defaults —
+      // same one-shot gate as preApply, consumed together downstream.
+      if (scopeLabel === 'Voucher' && preApply) {
+        const voucherNoRaw = fields.find((f: any) => f.code === AUTO_FILTER_VOUCHER_NO_FIELD_CODE)?.value as string | undefined;
+        const voucherTypeValue = fields.find((f: any) => f.code === AUTO_FILTER_VOUCHER_TYPE_FIELD_CODE)?.value as string | undefined;
+        const parsedVoucherNo = parseAutoFilterVoucherNo(voucherNoRaw);
+
+        if (parsedVoucherNo) dispatch(setAutoFilterVoucherNo(parsedVoucherNo));
+        if (voucherTypeValue) dispatch(setAutoFilterVoucherType({ label: voucherTypeValue, value: voucherTypeValue }));
+      }
+    } catch (error) {
+      dispatch(setScope(fallback));
+    }
   };
 
   const fetchToken = async (values: TypeLoginForm, killPreviousSession = false) => {
@@ -78,13 +131,8 @@ const useLoginHook = () => {
           dispatch(setDesignBankCount(count));
 
           dispatch(setCustomer(null));
-          
-          dispatch(
-            setScope({
-              label: 'PDCM Design Bank',
-              value: 'PDCM Design Bank',
-            })
-          );
+
+          applyAutoFilterScope(access_token);
 
           fetchUserDefaultData(access_token);
 

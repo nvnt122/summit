@@ -14,8 +14,9 @@ const useProductListing = () => {
   const { SUMMIT_APP_CONFIG }: any = CONSTANTS;
   const { query }: any = useRouter();
   const TokenFromStore: any = useSelector(get_access_token);
-  const { companyCode } = useSelector(KCFromStore);
+  const { companyCode, scope } = useSelector(KCFromStore);
   const cocd = (typeof companyCode === 'object' ? companyCode?.value : companyCode) || undefined;
+  const activeScopeValue = (typeof scope === 'object' ? scope?.value : scope) || 'PDCM Design Bank';
 
   const [toggleProductListView, setToggleProductListView] = useState('list-view');
   const [productListingData, setProductListingData] = useState<any>([]);
@@ -106,7 +107,7 @@ const useProductListing = () => {
           page: '1',
           currency: 'US$',
           sort_by: sortBy,
-          scope: 'PDCM Design Bank',
+          scope: activeScopeValue,
           ...(cocd && { cocd })
         },
       });
