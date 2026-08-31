@@ -69,6 +69,17 @@ const useLoginHook = () => {
       const scopeLabel = fields.find((f: any) => f.code === AUTO_FILTER_SCOPE_FIELD_CODE)?.value as ScopeLabel | undefined;
       const preApply = fields.find((f: any) => f.code === AUTO_FILTER_PRE_APPLY_FIELD_CODE)?.value === 'Y';
 
+      // preApply gates the scope preselection itself, not just whether its
+      // filter defaults get auto-applied on top — 'N' means behave exactly
+      // as before this feature existed (Design Bank), ignoring whatever
+      // scope the config resolved to.
+      if (!preApply) {
+        dispatch(setScope(fallback));
+        dispatch(setCurrentScope(fallback.value));
+        dispatch(setAutoFilterPreApply(false));
+        return;
+      }
+
       const resolvedValue = scopeLabel && SCOPE_LABEL_TO_VALUE[scopeLabel] ? SCOPE_LABEL_TO_VALUE[scopeLabel] : fallback.value;
       const resolvedScope = { label: resolvedValue, value: resolvedValue };
 
