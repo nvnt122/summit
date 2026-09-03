@@ -15,11 +15,11 @@ import i18n from '../../i18n/i18n';
 import useCurrencyLanguageHandler from '../GeneralHooks/LanguageHandler';
 import { currencyOptions } from '../../utils/addon-utils/currency-map';
 import useUserDefaultData from '../addon-hooks/kc-hooks/useUserData';
-import { setCustomer, setCurrentScope, setDesignBankCount, setScope, setAutoFilterPreApply, setAutoFilterVoucherNo, setAutoFilterVoucherType } from '../../store/slices/general_slices/kc-slice';
+import { setCustomer, setCurrentScope, setDesignBankCount, setScope, setAutoFilterPreApply, setAutoFilterVoucherNo, setAutoFilterVoucherType, setAutoFilterCompanyCode, setAutoFilterScopeResolving } from '../../store/slices/general_slices/kc-slice';
 import { resetStore } from '../../store/slices/auth/logout-slice';
 import { persistor } from '../../store/store';
 import fetchDynamicConfig from '../../services/api/general-apis/get-dynamic-config';
-import { AUTO_FILTER_SECTION_TYPE, AUTO_FILTER_SCOPE_FIELD_CODE, AUTO_FILTER_PRE_APPLY_FIELD_CODE, AUTO_FILTER_VOUCHER_NO_FIELD_CODE, AUTO_FILTER_VOUCHER_TYPE_FIELD_CODE, parseAutoFilterVoucherNo } from '../../utils/addon-utils/auto-filter-config';
+import { AUTO_FILTER_SECTION_TYPE, AUTO_FILTER_SCOPE_FIELD_CODE, AUTO_FILTER_PRE_APPLY_FIELD_CODE, AUTO_FILTER_VOUCHER_NO_FIELD_CODE, AUTO_FILTER_VOUCHER_TYPE_FIELD_CODE, AUTO_FILTER_COMPANY_CODE_FIELD_CODE, parseAutoFilterVoucherNo } from '../../utils/addon-utils/auto-filter-config';
 import { SCOPE_LABEL_TO_VALUE, ScopeLabel } from '../../components/addon-components/TwoLevelSidebar/filterConfig';
 
 const useLoginHook = () => {
@@ -52,6 +52,14 @@ const useLoginHook = () => {
   const { SUMMIT_APP_CONFIG }: any = CONSTANTS;
   const applyAutoFilterScope = async (token: string) => {
     const fallback = { label: 'PDCM Design Bank', value: 'PDCM Design Bank' };
+    // `scope` is never null (defaults to PDCM Design Bank), so a consumer
+    // that needs to fetch scope-specific data (the dynamic Filter config)
+    // can't tell "no auto-filter, genuinely Design Bank" apart from "this
+    // lookup hasn't landed yet" by reading `scope` alone. This flag is the
+    // explicit signal for that window — set for the duration of this
+    // lookup, cleared on every exit path (success, preApply=N, and error)
+    // via `finally` so a consumer waiting on it never hangs.
+    dispatch(setAutoFilterScopeResolving(true));
     try {
       const response: any = await fetchDynamicConfig(
         SUMMIT_APP_CONFIG,
@@ -87,6 +95,14 @@ const useLoginHook = () => {
       dispatch(setCurrentScope(resolvedValue));
       dispatch(setAutoFilterPreApply(preApply));
 
+      // Company Code is not scope-specific (unlike Voucher No/Type below) —
+      // apply it whenever the config provides one, regardless of which scope
+      // was resolved.
+      const companyCodeValue = fields.find((f: any) => f.code === AUTO_FILTER_COMPANY_CODE_FIELD_CODE)?.value as string | undefined;
+      if (companyCodeValue) {
+        dispatch(setAutoFilterCompanyCode({ label: companyCodeValue, value: companyCodeValue }));
+      }
+
       // Voucher No / Voucher Type are only relevant (and only ever populated
       // by the config) when the resolved scope is Voucher, and are only
       // meaningful to apply alongside the rest of the auto-filter defaults —
@@ -101,6 +117,8 @@ const useLoginHook = () => {
       }
     } catch (error) {
       dispatch(setScope(fallback));
+    } finally {
+      dispatch(setAutoFilterScopeResolving(false));
     }
   };
 
@@ -125,11 +143,23 @@ const useLoginHook = () => {
       ) {
         const { access_token, isPwdChg, count, full_name } = tokenData.data;
         await persistor.purge();
-        dispatch(resetStore());  
+        dispatch(resetStore());
         localStorage.clear();
         if (isPwdChg !== 0) {
           dispatch(storeToken(tokenData.data));
         }
+
+        // Set BEFORE navigating, not inside applyAutoFilterScope itself —
+        // that only runs from the requestAnimationFrame callback below, which
+        // fires after router.replace has already committed the destination
+        // page's first render. A consumer mounting on that first render (the
+        // product-category dynamic-config-fetch-trigger effect) would read
+        // autoFilterScopeResolving still at its reset-store default (false)
+        // and fetch the wrong (default-scope) config before this resolution
+        // ever started, wrongly winning the race against the real resolved
+        // scope. Dispatching here means it's already true by that first
+        // render, so that consumer waits instead.
+        dispatch(setAutoFilterScopeResolving(true));
 
         const redirectUrl =
           isPwdChg === 0
