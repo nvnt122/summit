@@ -50,6 +50,18 @@ interface FiltersState {
   // once the auto-apply runs, same one-shot lifecycle.
   autoFilterVoucherNo: { OdCoCd: string; OdTc: string; OdYy: string; OdChr: string; OdNo: string } | null,
   autoFilterVoucherType: { label: string; value: string } | null,
+  // Company code from the same login-time 'AutoFilter' config lookup — not
+  // scope-specific (unlike the Voucher fields above). Consumed (reset to
+  // null) alongside autoFilterPreApply once the auto-apply runs.
+  autoFilterCompanyCode: { label: string; value: string } | null,
+  // True for the duration of the login-time 'AutoFilter' config lookup
+  // (applyAutoFilterScope). `scope` itself is never null (it defaults to
+  // PDCM Design Bank), so a consumer that needs to fetch scope-specific data
+  // (the dynamic Filter config) can't tell "no auto-filter, genuinely Design
+  // Bank" apart from "auto-filter scope resolution hasn't landed yet" by
+  // reading `scope` alone. Consumers that fetch based on `scope` should wait
+  // for this to go false before trusting it.
+  autoFilterScopeResolving: boolean,
 }
 
 const initialState: FiltersState = {
@@ -85,6 +97,8 @@ const initialState: FiltersState = {
   autoFilterPreApply: false,
   autoFilterVoucherNo: null,
   autoFilterVoucherType: null,
+  autoFilterCompanyCode: null,
+  autoFilterScopeResolving: false,
 };
 
 export const KCSlice = createSlice({
@@ -211,10 +225,16 @@ export const KCSlice = createSlice({
     setAutoFilterVoucherType: (state, action) => {
       state.autoFilterVoucherType = action.payload;
     },
+    setAutoFilterCompanyCode: (state, action) => {
+      state.autoFilterCompanyCode = action.payload;
+    },
+    setAutoFilterScopeResolving: (state, action) => {
+      state.autoFilterScopeResolving = action.payload;
+    },
   },
 })
 
-export const { setHideFiltersOnFirstLoad, setGridCols, setGoldRate, setPalladiumRate, setPlatinumRate, setSilverRate, setMetalRateSidebar, setPrevCSFilters, setFilters, setFiltersSetOfAPI, setCurrentScope, setCurrentSubScope, setCustomer, setScope, setUserDefaultData, setUserDefaultLoading, setUserDefaultSidebar, setDesignBankCount, setGradeChangeList, setDiamondChangeList, setColorStoneChangeList, setCustomiseFilters, setShowProductCardDetails, setSelectAllProducts, setToggleProductView, setDesignSizes, setAttributesData, setCompanyCode, setCartHeadInfo, setAutoFilterPreApply, setAutoFilterVoucherNo, setAutoFilterVoucherType } = KCSlice.actions;
+export const { setHideFiltersOnFirstLoad, setGridCols, setGoldRate, setPalladiumRate, setPlatinumRate, setSilverRate, setMetalRateSidebar, setPrevCSFilters, setFilters, setFiltersSetOfAPI, setCurrentScope, setCurrentSubScope, setCustomer, setScope, setUserDefaultData, setUserDefaultLoading, setUserDefaultSidebar, setDesignBankCount, setGradeChangeList, setDiamondChangeList, setColorStoneChangeList, setCustomiseFilters, setShowProductCardDetails, setSelectAllProducts, setToggleProductView, setDesignSizes, setAttributesData, setCompanyCode, setCartHeadInfo, setAutoFilterPreApply, setAutoFilterVoucherNo, setAutoFilterVoucherType, setAutoFilterCompanyCode, setAutoFilterScopeResolving } = KCSlice.actions;
 export const KCFromStore = (state: any) => {
   const slice = state.KCSlice;
   const rawCompany = slice.companyCode;
