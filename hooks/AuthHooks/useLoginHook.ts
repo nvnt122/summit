@@ -15,11 +15,11 @@ import i18n from '../../i18n/i18n';
 import useCurrencyLanguageHandler from '../GeneralHooks/LanguageHandler';
 import { currencyOptions } from '../../utils/addon-utils/currency-map';
 import useUserDefaultData from '../addon-hooks/kc-hooks/useUserData';
-import { setCustomer, setCurrentScope, setDesignBankCount, setScope, setAutoFilterPreApply, setAutoFilterVoucherNo, setAutoFilterVoucherType, setAutoFilterCompanyCode, setAutoFilterScopeResolving } from '../../store/slices/general_slices/kc-slice';
+import { setCustomer, setCurrentScope, setDesignBankCount, setScope, setAutoFilterPreApply, setAutoFilterScopeResolving } from '../../store/slices/general_slices/kc-slice';
 import { resetStore } from '../../store/slices/auth/logout-slice';
 import { persistor } from '../../store/store';
 import fetchDynamicConfig from '../../services/api/general-apis/get-dynamic-config';
-import { AUTO_FILTER_SECTION_TYPE, AUTO_FILTER_SCOPE_FIELD_CODE, AUTO_FILTER_PRE_APPLY_FIELD_CODE, AUTO_FILTER_VOUCHER_NO_FIELD_CODE, AUTO_FILTER_VOUCHER_TYPE_FIELD_CODE, AUTO_FILTER_COMPANY_CODE_FIELD_CODE, parseAutoFilterVoucherNo } from '../../utils/addon-utils/auto-filter-config';
+import { AUTO_FILTER_SECTION_TYPE, AUTO_FILTER_SCOPE_FIELD_CODE, AUTO_FILTER_PRE_APPLY_FIELD_CODE } from '../../utils/addon-utils/auto-filter-config';
 import { SCOPE_LABEL_TO_VALUE, ScopeLabel } from '../../components/addon-components/TwoLevelSidebar/filterConfig';
 
 const useLoginHook = () => {
@@ -94,27 +94,11 @@ const useLoginHook = () => {
       dispatch(setScope(resolvedScope));
       dispatch(setCurrentScope(resolvedValue));
       dispatch(setAutoFilterPreApply(preApply));
-
-      // Company Code is not scope-specific (unlike Voucher No/Type below) —
-      // apply it whenever the config provides one, regardless of which scope
-      // was resolved.
-      const companyCodeValue = fields.find((f: any) => f.code === AUTO_FILTER_COMPANY_CODE_FIELD_CODE)?.value as string | undefined;
-      if (companyCodeValue) {
-        dispatch(setAutoFilterCompanyCode({ label: companyCodeValue, value: companyCodeValue }));
-      }
-
-      // Voucher No / Voucher Type are only relevant (and only ever populated
-      // by the config) when the resolved scope is Voucher, and are only
-      // meaningful to apply alongside the rest of the auto-filter defaults —
-      // same one-shot gate as preApply, consumed together downstream.
-      if (scopeLabel === 'Voucher' && preApply) {
-        const voucherNoRaw = fields.find((f: any) => f.code === AUTO_FILTER_VOUCHER_NO_FIELD_CODE)?.value as string | undefined;
-        const voucherTypeValue = fields.find((f: any) => f.code === AUTO_FILTER_VOUCHER_TYPE_FIELD_CODE)?.value as string | undefined;
-        const parsedVoucherNo = parseAutoFilterVoucherNo(voucherNoRaw);
-
-        if (parsedVoucherNo) dispatch(setAutoFilterVoucherNo(parsedVoucherNo));
-        if (voucherTypeValue) dispatch(setAutoFilterVoucherType({ label: voucherTypeValue, value: voucherTypeValue }));
-      }
+      // Every actual filter default (company code, voucher type, voucher no,
+      // etc.) is intentionally NOT read from this config — it comes from the
+      // resolved scope's own 'Filter' dynamic config instead, applied as-is,
+      // exactly like a manual scope switch. This lookup only ever decides
+      // which scope to preselect and whether to auto-apply it.
     } catch (error) {
       dispatch(setScope(fallback));
     } finally {
