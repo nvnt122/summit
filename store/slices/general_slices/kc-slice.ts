@@ -45,6 +45,11 @@ interface FiltersState {
   // on the product-category page. Consumed (reset to false) once that
   // auto-apply actually runs.
   autoFilterPreApply: boolean,
+  // The scope value (e.g. 'Stock') the 'AutoFilter' config resolved to, set
+  // together with autoFilterPreApply=true. Auto-apply only ever targets THIS
+  // scope — never whatever redux `scope` happens to hold when the Filter
+  // config lands (a stale session/URL sync can reset that to Design Bank).
+  autoFilterTargetScope: string | null,
   // True for the duration of the login-time 'AutoFilter' config lookup
   // (applyAutoFilterScope). `scope` itself is never null (it defaults to
   // PDCM Design Bank), so a consumer that needs to fetch scope-specific data
@@ -86,6 +91,7 @@ const initialState: FiltersState = {
   companyCode: null,
   cartHeadInfo: null,
   autoFilterPreApply: false,
+  autoFilterTargetScope: null,
   autoFilterScopeResolving: false,
 };
 
@@ -207,13 +213,16 @@ export const KCSlice = createSlice({
     setAutoFilterPreApply: (state, action) => {
       state.autoFilterPreApply = action.payload;
     },
+    setAutoFilterTargetScope: (state, action) => {
+      state.autoFilterTargetScope = action.payload;
+    },
     setAutoFilterScopeResolving: (state, action) => {
       state.autoFilterScopeResolving = action.payload;
     },
   },
 })
 
-export const { setHideFiltersOnFirstLoad, setGridCols, setGoldRate, setPalladiumRate, setPlatinumRate, setSilverRate, setMetalRateSidebar, setPrevCSFilters, setFilters, setFiltersSetOfAPI, setCurrentScope, setCurrentSubScope, setCustomer, setScope, setUserDefaultData, setUserDefaultLoading, setUserDefaultSidebar, setDesignBankCount, setGradeChangeList, setDiamondChangeList, setColorStoneChangeList, setCustomiseFilters, setShowProductCardDetails, setSelectAllProducts, setToggleProductView, setDesignSizes, setAttributesData, setCompanyCode, setCartHeadInfo, setAutoFilterPreApply, setAutoFilterScopeResolving } = KCSlice.actions;
+export const { setHideFiltersOnFirstLoad, setGridCols, setGoldRate, setPalladiumRate, setPlatinumRate, setSilverRate, setMetalRateSidebar, setPrevCSFilters, setFilters, setFiltersSetOfAPI, setCurrentScope, setCurrentSubScope, setCustomer, setScope, setUserDefaultData, setUserDefaultLoading, setUserDefaultSidebar, setDesignBankCount, setGradeChangeList, setDiamondChangeList, setColorStoneChangeList, setCustomiseFilters, setShowProductCardDetails, setSelectAllProducts, setToggleProductView, setDesignSizes, setAttributesData, setCompanyCode, setCartHeadInfo, setAutoFilterPreApply, setAutoFilterTargetScope, setAutoFilterScopeResolving } = KCSlice.actions;
 export const KCFromStore = (state: any) => {
   const slice = state.KCSlice;
   const rawCompany = slice.companyCode;
