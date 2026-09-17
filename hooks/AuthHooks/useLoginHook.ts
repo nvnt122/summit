@@ -15,7 +15,7 @@ import i18n from '../../i18n/i18n';
 import useCurrencyLanguageHandler from '../GeneralHooks/LanguageHandler';
 import { currencyOptions } from '../../utils/addon-utils/currency-map';
 import useUserDefaultData from '../addon-hooks/kc-hooks/useUserData';
-import { setCustomer, setCurrentScope, setDesignBankCount, setScope, setAutoFilterPreApply, setAutoFilterScopeResolving } from '../../store/slices/general_slices/kc-slice';
+import { setCustomer, setCurrentScope, setDesignBankCount, setScope, setAutoFilterPreApply, setAutoFilterTargetScope, setAutoFilterScopeResolving } from '../../store/slices/general_slices/kc-slice';
 import { resetStore } from '../../store/slices/auth/logout-slice';
 import { persistor } from '../../store/store';
 import fetchDynamicConfig from '../../services/api/general-apis/get-dynamic-config';
@@ -81,18 +81,24 @@ const useLoginHook = () => {
       // filter defaults get auto-applied on top — 'N' means behave exactly
       // as before this feature existed (Design Bank), ignoring whatever
       // scope the config resolved to.
-      if (!preApply) {
+      // A missing/unknown scope is treated the same as preApply=N — auto-apply
+      // must only ever run for a scope the config explicitly named, never for
+      // a silently substituted Design Bank fallback.
+      const hasValidScope = !!(scopeLabel && SCOPE_LABEL_TO_VALUE[scopeLabel]);
+      if (!preApply || !hasValidScope) {
         dispatch(setScope(fallback));
         dispatch(setCurrentScope(fallback.value));
         dispatch(setAutoFilterPreApply(false));
+        dispatch(setAutoFilterTargetScope(null));
         return;
       }
 
-      const resolvedValue = scopeLabel && SCOPE_LABEL_TO_VALUE[scopeLabel] ? SCOPE_LABEL_TO_VALUE[scopeLabel] : fallback.value;
+      const resolvedValue = SCOPE_LABEL_TO_VALUE[scopeLabel as ScopeLabel];
       const resolvedScope = { label: resolvedValue, value: resolvedValue };
 
       dispatch(setScope(resolvedScope));
       dispatch(setCurrentScope(resolvedValue));
+      dispatch(setAutoFilterTargetScope(resolvedValue));
       dispatch(setAutoFilterPreApply(preApply));
       // Every actual filter default (company code, voucher type, voucher no,
       // etc.) is intentionally NOT read from this config — it comes from the
